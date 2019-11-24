@@ -1,14 +1,6 @@
-let CSE_Challenge = {
-  'womens-clothing': 0,
-  'mens-clothing': 0,
-  home: 0,
-  lifestyle: 0,
-  beauty: 0,
-};
+let storage = window.localStorage;
 
-// chrome.storage.sync.get(['utag_data.page_breadcrumb'], function(result) {
-//   console.log('Value currently is ' + result.key);
-// });
+//checking the category of the item
 const body = document.getElementsByTagName('body');
 let utag_data = body[0].children[0].innerHTML;
 const idx = utag_data.indexOf('page_breadcrumb');
@@ -22,11 +14,29 @@ let category = utag_data
   .toString()
   .replace(/[^a-z-]/g, '');
 
-for (let key in CSE_Challenge) {
-  if (category === key) CSE_Challenge[key]++;
+//checking for the CSE_Challenge value in the local storage
+//and updating the affinity score
+let affinity = storage.getItem('CSE_Challenge');
+if (affinity) {
+  affinity = JSON.parse(affinity);
+} else {
+  affinity = {
+    'womens-clothing': 0,
+    'mens-clothing': 0,
+    home: 0,
+    lifestyle: 0,
+    beauty: 0,
+  };
 }
+affinity[category]++;
+storage.setItem('CSE_Challenge', JSON.stringify(affinity));
 
-console.log(CSE_Challenge);
-// console.log(typeof utag_data, utag_data);
-//console.log(c);
-//
+//checking if the item was added to cart and updating the score accordingly
+const addToCart = document.getElementsByClassName(
+  'js-add-to-cart o-button-basket c-product-add-to-cart__button'
+);
+
+addToCart[0].addEventListener('click', () => {
+  affinity[category] += 3;
+  storage.setItem('CSE_Challenge', JSON.stringify(affinity));
+});
